@@ -1,5 +1,6 @@
 ﻿using Owin;
 using OwinDemo;
+using System.Web.Http;
 
 class BarBody
 {
@@ -21,15 +22,6 @@ class BarBody
             });
         });
 
-        app.Use((context, next) => context.Response.WriteAsync("Hello from OWIN"));
-
-        // GET : /bar
-        AppBuilderExtension.GetMethod(
-            app,
-            "/bar",
-            (context, next) => context.Response.WriteAsync("Get bar")
-            );
-
         app.Use((context, next) =>
         {
             if (context.Request.Method == "POST")
@@ -41,7 +33,27 @@ class BarBody
             return next();
         });
 
-        }
+        //Configure HttpConfiguration for routing
+        HttpConfiguration configuration = new HttpConfiguration();
+        configuration.Routes.MapHttpRoute(
+            name: "DefaultAPI",
+            routeTemplate: "API/{controller}/{action}/{id}",
+            defaults: new { id = RouteParameter.Optional }
+            );
+
+        app.UseWebApi(configuration);
+
+
+        // GET : /bar
+        AppBuilderExtension.GetMethod(
+            app,
+            "/bar",
+            (context, next) => context.Response.WriteAsync("Get bar")
+            );
+
+
+        app.Use((context, next) => context.Response.WriteAsync("Hello from OWIN"));
+    }
     }
 
 
